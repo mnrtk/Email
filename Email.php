@@ -4,6 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 use Mail\ConfigSmtp;
+use Mail\EmailSender;
 
 
 //Load Composer's autoloader
@@ -28,13 +29,15 @@ class Email
         $this->mail->Port       = $configSmtp->getPort();
     }
 
-    public function setSender(EmailSender $sender)
+    /**
+     * @throws Exception
+     */
+    public function setSender(EmailSender $sender): void
     {
-        $this->mail->setFrom('from@example.com', 'Mailer');
-        $this->mail->addAddress('joe@example.net', 'Joe User');     //Add a recipient
-        $this->mail->addAddress('ellen@example.com');               //Name is optional
-        $this->mail->addReplyTo('info@example.com', 'Information');
-        $this->mail->addCC('cc@example.com');
-        $this->mail->addBCC('bcc@example.com');
+        $this->mail->setFrom($sender->getFromAddress(), $sender->getFromName());
+        $this->mail->addAddress($sender->getAddress(), $sender->getName());
+        $this->mail->addReplyTo($sender->getReplyTo());
+        $this->mail->addCC($sender->getCc());
+        $this->mail->addBCC($sender->getBcc());
     }
 }
