@@ -1,10 +1,9 @@
 <?php
+namespace Mail;
 
+use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
-use Mail\ConfigSmtp;
-use Mail\EmailSender;
 
 
 //Load Composer's autoloader
@@ -25,13 +24,12 @@ class Email
         $this->mail->SMTPAuth   = true;                                   //Enable SMTP authentication
         $this->mail->Username   = $configSmtp->getUsername();                     //SMTP username
         $this->mail->Password   = $configSmtp->getPassword();                               //SMTP password
-        $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+        $this->mail->SMTPSecure = 'tls';            // PHPMailer::ENCRYPTION_SMTPS Enable implicit TLS encryption
+        $this->mail->SMTPAutoTLS = false;
         $this->mail->Port       = $configSmtp->getPort();
     }
 
-    /**
-     * @throws Exception
-     */
+
     public function setSender(EmailSender $sender): void
     {
         $this->mail->setFrom($sender->getFromAddress(), $sender->getFromName());
@@ -39,5 +37,38 @@ class Email
         $this->mail->addReplyTo($sender->getReplyTo());
         $this->mail->addCC($sender->getCc());
         $this->mail->addBCC($sender->getBcc());
+    }
+
+    /**
+     * @param Content $content
+     * @return void
+     */
+    public function setContent(Content $content): void
+    {
+        $this->mail->isHTML($content->isHtml());
+
+        $this->mail->Subject = $content->getSubject();
+
+        $this->mail->Body  = $content->getBody();
+
+        $this->mail->AltBody = $content->getAltBody();
+    }
+
+
+    public function send(): void
+    {
+        try {
+
+            if($this->mail->send()) {
+                echo "success";
+            }else {
+
+                echo "<pre>".$this->mail->ErrorInfo."</pre>";
+            }
+
+        } catch (Exception $e) {
+
+            echo "Can't send email. Error occurred";
+        }
     }
 }

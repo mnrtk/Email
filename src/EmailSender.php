@@ -1,5 +1,4 @@
 <?php
-
 namespace Mail;
 
 class EmailSender
